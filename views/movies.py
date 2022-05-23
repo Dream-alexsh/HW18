@@ -10,7 +10,18 @@ movie_ns = Namespace('movies')
 class MovieView(Resource):
     def get(self):
         try:
-            all_movies = db.session.query(Movie).all()
+            year = request.args.get('year')
+            director_id = request.args.get('director_id')
+            genre_id = request.args.get('genre_id')
+
+            if year:
+                all_movies = db.session.query(Movie).filter(Movie.year == year).all()
+            elif director_id:
+                all_movies = db.session.query(Movie).filter(Movie.director_id == director_id).all()
+            elif genre_id:
+                all_movies = db.session.query(Movie).filter(Movie.genre_id == genre_id).all()
+            else:
+                all_movies = db.session.query(Movie).all()
             return movies_schema.dump(all_movies), 200
         except Exception as e:
             return str(e), 404
@@ -23,41 +34,6 @@ class MovieView(Resource):
         db.session.close()
 
         return "", 201
-
-
-@movie_ns.route('/d')
-class MovieView(Resource):
-    def get(self):
-        try:
-            director_id = request.args['director_id']
-            all_movies = Movie.query.filter(Movie.director_id == director_id)
-            return movies_schema.dump(all_movies), 200
-
-        except Exception as e:
-            return str(e), 404
-
-
-@movie_ns.route('/g')
-class MovieView(Resource):
-    def get(self):
-        try:
-            genre_id = request.args['genre_id']
-            all_movies = Movie.query.filter(Movie.genre_id == genre_id)
-            return movies_schema.dump(all_movies), 200
-
-        except Exception as e:
-            return str(e), 404
-
-@movie_ns.route('/y')
-class MovieView(Resource):
-    def get(self):
-        try:
-            year = request.args['year']
-            all_movies = Movie.query.filter(Movie.year == year)
-            return movies_schema.dump(all_movies), 200
-
-        except Exception as e:
-            return str(e), 404
 
 
 @movie_ns.route('/<int:bid>')
